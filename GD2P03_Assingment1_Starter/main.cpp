@@ -1,8 +1,13 @@
 #define NOMINMAX
 #include "Downloader.h"
 #include <SFML/Graphics.hpp>
+#include <iostream>
+#include <thread>
 #include <vector>
-
+#include <future>
+#include <mutex>
+#include <memory>
+std::chrono::steady_clock::time_point startTime;
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
 	//saves the current window to an image
@@ -48,6 +53,7 @@ int main()
 			oldPos = pos + 1;
 		}
 	} 
+	/*
 	sf::RectangleShape imageArray[9];
 	sf::Texture textArray[9];
 	int count = 0;
@@ -69,13 +75,56 @@ int main()
 
 			count++;
 		}
-	}
+	}*/
+	std::vector<sf::RectangleShape> imageArray(9);
+	std::vector<sf::Texture> textArray(9);
+	std::mutex countMutex;
+	startTime = std::chrono::steady_clock::now();
+	int count = 0;
+	auto downloadAndProcess = [&](int i, int j) {
+		std::string data = "";
+		int localCount;
+		{
+			std::lock_guard<std::mutex> lock(countMutex);
+			localCount = count;
+			count++;
+			std::cout << count << " | " << std::endl;
+		}
 
+		if (downloader.Download(urls[localCount].c_str(), data)) {
+			if (!textArray[localCount].loadFromMemory(data.c_str(), data.length())) {
+				std::cout << "D" << " | " << std::endl;
+				return -1;
+			}
+
+			imageArray[localCount].setTexture(&textArray[localCount], false);
+			imageArray[localCount].setSize(sf::Vector2f(200, 200));
+			imageArray[localCount].setPosition(200 * i, 200 * j);
+		}
+		std::cout << " DEAD " <<count<< " | " << std::endl;
+		return 0;
+		};
+	
+	std::vector<std::future<int>> futures;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			std::cout << i << " | " << j<< std::endl;
+			futures.push_back(std::async(std::launch::async, downloadAndProcess, i, j));
+		}
+	}
+	
+	for (auto& future : futures) {
+		future.get(); // Wait for all threads to finish
+	}
+	
+	auto endTime = std::chrono::steady_clock::now(); // End the timer
+	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+	std::cout << "Total time taken to load images: " << elapsedTime << " milliseconds" << std::endl;
 
 	/*sprite.setTexture(txtr);
 	sprite.setPosition(0, 0);
 	sprite.setScale(sf::Vector2f(1, 1));
-	std::cout << sprite.getGlobalBounds().width << " : "<<sprite.getGlobalBounds().height;*/
+	std::cout << sprite.getGlobalBounds().width << " : "<<sprite.getGlobalBounds().height;*/                        
 	while (window.isOpen())
 	{
 		sf::Event winEvent;
@@ -90,7 +139,7 @@ int main()
 
 		window.clear();
 		for (int i = 0; i < 9; i++) {
-		
+			
 			window.draw(imageArray[i]);
 		}
 		
