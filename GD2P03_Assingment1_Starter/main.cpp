@@ -7,6 +7,7 @@
 #include <future>
 #include <mutex>
 #include <memory>
+
 std::chrono::steady_clock::time_point startTime;
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
@@ -21,7 +22,9 @@ void screenshot(std::string fileSaveLocation, sf::Window* window)
 }
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(800, 800), "GD2P03 Assignment 1");
+	int windowSize = 900;
+	int imageCount = 9;
+	sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
 	
 	CDownloader downloader;
 	downloader.Init();
@@ -38,7 +41,9 @@ int main()
 	{
 		printf("data failed to download");
 	}
-
+	
+	int imageSize = windowSize / sqrt(imageCount);
+	
 	//split the urls
 	size_t pos = 0;
 	size_t oldPos = 0;
@@ -76,8 +81,8 @@ int main()
 			count++;
 		}
 	}*/
-	std::vector<sf::RectangleShape> imageArray(9);
-	std::vector<sf::Texture> textArray(9);
+	std::vector<sf::RectangleShape> imageArray(imageCount);
+	std::vector<sf::Texture> textArray(imageCount);
 	std::mutex countMutex;
 	startTime = std::chrono::steady_clock::now();
 	int count = 0;
@@ -88,7 +93,7 @@ int main()
 			std::lock_guard<std::mutex> lock(countMutex);
 			localCount = count;
 			count++;
-			std::cout << count << " | " << std::endl;
+			//std::cout << count << " | " << std::endl;
 		}
 
 		if (downloader.Download(urls[localCount].c_str(), data)) {
@@ -98,23 +103,27 @@ int main()
 			}
 
 			imageArray[localCount].setTexture(&textArray[localCount], false);
-			imageArray[localCount].setSize(sf::Vector2f(200, 200));
-			imageArray[localCount].setPosition(200 * i, 200 * j);
-		}
-		std::cout << " DEAD " <<count<< " | " << std::endl;
+			imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
+			imageArray[localCount].setPosition(imageSize * i, imageSize * j);
+		}	
+	//	std::cout << " DEAD " <<count<< " | " << std::endl;
 		return 0;
 		};
 	
 	std::vector<std::future<int>> futures;
 	for (int i = 0; i < 3; i++) {
+
 		for (int j = 0; j < 3; j++) {
 			std::cout << i << " | " << j<< std::endl;
 			futures.push_back(std::async(std::launch::async, downloadAndProcess, i, j));
 		}
 	}
-	
+	std::cout << " threads started" << std::endl;
+	int countStart = 0;
 	for (auto& future : futures) {
 		future.get(); // Wait for all threads to finish
+		countStart++;
+		std::cout << countStart << std::endl;
 	}
 	
 	auto endTime = std::chrono::steady_clock::now(); // End the timer
@@ -138,7 +147,7 @@ int main()
 		}
 
 		window.clear();
-		for (int i = 0; i < 9; i++) {
+		for (int i = 0; i < imageCount; i++) {
 			
 			window.draw(imageArray[i]);
 		}
