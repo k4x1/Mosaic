@@ -8,10 +8,9 @@
 #include <mutex>
 #include <memory>
 
-std::chrono::steady_clock::time_point startTime;
+
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
-	//saves the current window to an image
 	sf::Texture texture;
 	texture.create(window->getSize().x, window->getSize().y);
 	texture.update(*window);
@@ -22,6 +21,7 @@ void screenshot(std::string fileSaveLocation, sf::Window* window)
 }
 int main()
 {
+	std::chrono::steady_clock::time_point startTime;
 	int windowSize = 900;
 	int imageCount = 9;
 	sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
@@ -83,10 +83,13 @@ int main()
 	}*/
 	std::vector<sf::RectangleShape> imageArray(imageCount);
 	std::vector<sf::Texture> textArray(imageCount);
+	textArray.reserve(urls.size());
 	std::mutex countMutex;
 	startTime = std::chrono::steady_clock::now();
 	int count = 0;
+	int threads = 0;
 	auto downloadAndProcess = [&](int i, int j) {
+		threads++;
 		std::string data = "";
 		int localCount;
 		{
@@ -105,6 +108,7 @@ int main()
 			imageArray[localCount].setTexture(&textArray[localCount], false);
 			imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
 			imageArray[localCount].setPosition(imageSize * i, imageSize * j);
+			threads = 0;
 		}	
 	//	std::cout << " DEAD " <<count<< " | " << std::endl;
 		return 0;
@@ -122,8 +126,9 @@ int main()
 	int countStart = 0;
 	for (auto& future : futures) {
 		future.get(); // Wait for all threads to finish
+
 		countStart++;
-		std::cout << countStart << std::endl;
+		std::cout<<countStart<<std::endl;
 	}
 	
 	auto endTime = std::chrono::steady_clock::now(); // End the timer
