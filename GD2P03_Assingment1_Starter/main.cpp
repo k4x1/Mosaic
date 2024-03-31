@@ -58,49 +58,28 @@ int main()
 			oldPos = pos + 1;
 		}
 	} 
-	/*
-	sf::RectangleShape imageArray[9];
-	sf::Texture textArray[9];
-	int count = 0;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
 
-
-			data = "";
-			downloader.Download(urls[count].c_str(), data);//download the image
-
-			if (!textArray[count].loadFromMemory(data.c_str(), data.length())) {
-				return -1;
-			}
-
-			imageArray[count].setTexture(&textArray[count], false);
-			imageArray[count].setSize(sf::Vector2f(200, 200));
-			imageArray[count].setPosition(200 * i, 200 * j);
-
-
-			count++;
-		}
-	}*/
 	std::vector<sf::RectangleShape> imageArray(imageCount);
 	std::vector<sf::Texture> textArray(imageCount);
 	textArray.reserve(urls.size());
 	std::mutex countMutex;
 	startTime = std::chrono::steady_clock::now();
 	int count = 0;
-	int threads = 0;
+
 	auto downloadAndProcess = [&](int i, int j) {
-		threads++;
+
 		std::string data = "";
 		int localCount;
 		{
 			std::lock_guard<std::mutex> lock(countMutex);
 			localCount = count;
 			count++;
-			//std::cout << count << " | " << std::endl;
 		}
 		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
 
 		if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
+			
+
 
 			if (!textArray[localCount].loadFromFile(filePath)) {
 				std::cout << "D" << " | " << std::endl;
@@ -110,9 +89,9 @@ int main()
 			imageArray[localCount].setTexture(&textArray[localCount], false);
 			imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
 			imageArray[localCount].setPosition(imageSize * i, imageSize * j);
-			threads = 0;
+
 		}	
-	//	std::cout << " DEAD " <<count<< " | " << std::endl;
+
 		return 0;
 		};
 	
@@ -137,10 +116,7 @@ int main()
 	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 	std::cout << "Total time taken to load images: " << elapsedTime << " milliseconds" << std::endl;
 
-	/*sprite.setTexture(txtr);
-	sprite.setPosition(0, 0);
-	sprite.setScale(sf::Vector2f(1, 1));
-	std::cout << sprite.getGlobalBounds().width << " : "<<sprite.getGlobalBounds().height;*/                        
+                 
 	while (window.isOpen())
 	{
 		sf::Event winEvent;
