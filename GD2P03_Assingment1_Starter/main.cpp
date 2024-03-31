@@ -7,7 +7,7 @@
 #include <future>
 #include <mutex>
 #include <memory>
-
+#include "FileImages.h"
 
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
@@ -98,9 +98,11 @@ int main()
 			count++;
 			//std::cout << count << " | " << std::endl;
 		}
+		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
 
-		if (downloader.Download(urls[localCount].c_str(), data)) {
-			if (!textArray[localCount].loadFromMemory(data.c_str(), data.length())) {
+		if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
+
+			if (!textArray[localCount].loadFromFile(filePath)) {
 				std::cout << "D" << " | " << std::endl;
 				return -1;
 			}

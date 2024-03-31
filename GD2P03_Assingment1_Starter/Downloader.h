@@ -2,7 +2,7 @@
 
 #define CURL_STATICLIB //removing this will give link warnings
 #include <curl/curl.h>
-
+#include <fstream>
 #include <string.h>
 #include <iostream>
 
@@ -13,8 +13,9 @@ public:
 	CDownloader();
 	~CDownloader();
 	void Init();
-
-	bool Download(const char * _url, std::string& _outputStr);
+	bool Download(const char* _url, std::string& _outputStr);
+	bool DownloadToFile(const char* _url, const char* _outputFile);
+	
 
 private:
 	CURL* m_curl = nullptr;//handle
