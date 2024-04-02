@@ -110,7 +110,7 @@ int main()
 		future.get(); // Wait for all threads to finish
 	}
 	
-//	grid.SetupImages(imageSize);
+	grid.SetupImages(imageSize);
 	auto loadImagesFromFile = [&]() {
 	
 		/*
@@ -146,11 +146,11 @@ int main()
 		}
 
 		window.clear();
-/*		for (int i = 0; i < grid.m_grid.size(); i++) {
+		for (int i = 0; i < grid.m_grid.size(); i++) {
 			for (int j = 0; j < grid.m_grid[i].size(); j++) {
 				window.draw(grid.m_grid[i][j].m_image);
 			}
-		}*/
+		}
 		
 		window.display();
 	}
