@@ -10,7 +10,15 @@
 #include <mutex>
 #include <memory>
 #include "Grid.h"
+#include <atomic>
+#include <filesystem>
 
+
+
+inline bool FileExists(const std::string& name) {
+	struct stat buffer;
+	return (stat(name.c_str(), &buffer) == 0);
+}
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
 	sf::Texture texture;
@@ -78,27 +86,36 @@ int main()
 		int localCount;
 		{
 			std::lock_guard<std::mutex> lock(countMutex);
-			localCount = count;
-			count++;
+			localCount = count++;
 		}
+
+		if (localCount >= urls.size()) {
+			std::cout << "No more URLs to download. Thread "  << " exiting." << std::endl;
+			return;
+		}
+
 		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
 
-		std::ifstream file(filePath);
-		if (!file.good()) { 
+		if (!FileExists(filePath)) {
+	
+			std::cout << "Downloading image " << localCount << " from URL: " << urls[localCount] << std::endl;
+			// Assume DownloadToFile returns true on success
 			if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
-			
-			
-				std::cout << "image download success: " <<localCount << std::endl;
-
+				std::cout << "Image download success: " << localCount << std::endl;
+			}
+			else {
+				std::cerr << "Failed to download image " << localCount << " from URL: " << urls[localCount] << std::endl;
+				return;
 			}
 		}
+
 		FileImages newImage(filePath);
 		grid.addTile(newImage);
-		return 0;
+
+		std::cout << "Processing image " << localCount << " in thread "<< std::endl;
 	};
 	
-		
-	std::vector<std::future<int>> futures;
+	std::vector<std::future<void>> futures;
 	for (int i = 0; i < 8; i++) {
 		std::cout <<"download started for: " << i << std::endl;
 			futures.push_back(std::async(std::launch::async, DownloadImageToFile));

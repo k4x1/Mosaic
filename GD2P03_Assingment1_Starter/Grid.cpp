@@ -15,7 +15,6 @@ void Grid::addTile(FileImages tile)
     bool notDone = true;
         while(notDone){
             for (int i = 0; i < m_grid.size(); i++) {
-                std::cout << "GRID SIZE: " << m_grid.size() << std::endl;
                 for (int j = 0; j < m_grid[i].size(); j++) {
                     if (m_grid[i][j].m_empty) {
                         tile.m_image.setTexture(&txt);
