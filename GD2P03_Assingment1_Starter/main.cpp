@@ -1,5 +1,7 @@
+#pragma once
 #define NOMINMAX
 #include "Downloader.h"
+#include "FileImages.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <thread>
@@ -7,7 +9,7 @@
 #include <future>
 #include <mutex>
 #include <memory>
-#include "FileImages.h"
+#include "Grid.h"
 
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
@@ -21,9 +23,11 @@ void screenshot(std::string fileSaveLocation, sf::Window* window)
 }
 int main()
 {
+	Grid grid;
 	std::chrono::steady_clock::time_point startTime;
-	int windowSize = 900;
-	int imageCount = 9;
+	int windowSize = 1000;
+	int MosaicSize = 3;
+	int imageCount = MosaicSize*MosaicSize;
 	sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
 	
 	CDownloader downloader;
@@ -59,16 +63,18 @@ int main()
 		}
 	} 
 
-	std::vector<sf::RectangleShape> imageArray(imageCount);
+	/*std::vector<sf::RectangleShape> imageArray(imageCount);
 	std::vector<sf::Texture> textArray(imageCount);
 	textArray.reserve(urls.size());
+	*/
+	
+	std::vector<FileImages> imageVector;
 	std::mutex countMutex;
 	startTime = std::chrono::steady_clock::now();
 	int count = 0;
+	
+	auto DownloadImageToFile = [&]() {
 
-	auto downloadAndProcess = [&](int i, int j) {
-
-		std::string data = "";
 		int localCount;
 		{
 			std::lock_guard<std::mutex> lock(countMutex);
@@ -77,41 +83,51 @@ int main()
 		}
 		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
 
-		if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
+		std::ifstream file(filePath);
+		if (!file.good()) { 
+			if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
 			
+			
+				std::cout << "image download success: " <<localCount << std::endl;
 
-
-			if (!textArray[localCount].loadFromFile(filePath)) {
-				std::cout << "D" << " | " << std::endl;
-				return -1;
 			}
-
-			imageArray[localCount].setTexture(&textArray[localCount], false);
-			imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
-			imageArray[localCount].setPosition(imageSize * i, imageSize * j);
-
-		}	
-
-		return 0;
-		};
-	
-	std::vector<std::future<int>> futures;
-	for (int i = 0; i < 3; i++) {
-
-		for (int j = 0; j < 3; j++) {
-			std::cout << i << " | " << j<< std::endl;
-			futures.push_back(std::async(std::launch::async, downloadAndProcess, i, j));
 		}
+		FileImages newImage(filePath);
+		grid.addTile(newImage);
+		return 0;
+	};
+	
+		
+	std::vector<std::future<int>> futures;
+	for (int i = 0; i < 8; i++) {
+		std::cout <<"download started for: " << i << std::endl;
+			futures.push_back(std::async(std::launch::async, DownloadImageToFile));
+		
 	}
 	std::cout << " threads started" << std::endl;
 	int countStart = 0;
 	for (auto& future : futures) {
 		future.get(); // Wait for all threads to finish
-
-		countStart++;
-		std::cout<<countStart<<std::endl;
 	}
 	
+//	grid.SetupImages(imageSize);
+	auto loadImagesFromFile = [&]() {
+	
+		/*
+
+				if (!textArray[localCount].loadFromFile(filePath)) {zz
+					std::cout << "D" << " | " << std::endl;
+					return -1;
+				}
+
+				imageArray[localCount].setTexture(&textArray[localCount], false);
+				imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
+				imageArray[localCount].setPosition(imageSize * i, imageSize * j);*/
+
+
+		return 0;
+
+	};
 	auto endTime = std::chrono::steady_clock::now(); // End the timer
 	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 	std::cout << "Total time taken to load images: " << elapsedTime << " milliseconds" << std::endl;
@@ -130,10 +146,11 @@ int main()
 		}
 
 		window.clear();
-		for (int i = 0; i < imageCount; i++) {
-			
-			window.draw(imageArray[i]);
-		}
+/*		for (int i = 0; i < grid.m_grid.size(); i++) {
+			for (int j = 0; j < grid.m_grid[i].size(); j++) {
+				window.draw(grid.m_grid[i][j].m_image);
+			}
+		}*/
 		
 		window.display();
 	}
