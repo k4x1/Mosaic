@@ -8,6 +8,7 @@
 #include <mutex>
 #include <memory>
 #include "FileImages.h"
+#include "Grid.h"
 
 void screenshot(std::string fileSaveLocation, sf::Window* window)
 {
@@ -21,6 +22,7 @@ void screenshot(std::string fileSaveLocation, sf::Window* window)
 }
 int main()
 {
+	Grid grid;
 	std::chrono::steady_clock::time_point startTime;
 	int windowSize = 900;
 	int imageCount = 9;
@@ -112,7 +114,7 @@ int main()
 	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 	std::cout << "Total time taken to load images: " << elapsedTime << " milliseconds" << std::endl;
 
-                 
+	grid.InitGrid();
 	while (window.isOpen())
 	{
 		sf::Event winEvent;
@@ -126,11 +128,21 @@ int main()
 		}
 
 		window.clear();
-		for (int i = 0; i < imageCount; i++) {
-			
-			window.draw(imageArray[i]);
+		//std::cout << grid.m_grid.size() << std::endl;
+		for (auto& row : grid.m_grid) {
+			for (auto& tile : row) {
+				window.draw(tile.m_image);
+			//	std::cout << "d";
+			}
+			//std::cout << "a" << std::endl;
 		}
+	/*	sf::Texture txt;
+		std::cout<<txt.loadFromFile("Images/emptyTile.png") <<std::endl;
+		sf::RectangleShape rct;
+		rct.setSize(sf::Vector2f(300, 300));
 		
+		rct.setTexture(&txt,false);
+		//window.draw(rct);*/
 		window.display();
 	}
 

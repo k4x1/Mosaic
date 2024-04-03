@@ -1,12 +1,14 @@
 #include "FileImages.h"
 
-FileImages::FileImages(std::string _filePath)
+FileImages::FileImages()
 {
 	m_rendered = false;
+	m_filePath = "";
+	m_empty = true;
 
-	m_filePath = _filePath;
+	//m_empty = (m_filePath == "");	
 
-	m_empty = (m_filePath == "");
+
 
 }
 

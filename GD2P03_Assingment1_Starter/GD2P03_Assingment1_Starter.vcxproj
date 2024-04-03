@@ -154,11 +154,13 @@
   <ItemGroup>
     <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="FileImages.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Downloader.h" />
     <ClInclude Include="FileImages.h" />
+    <ClInclude Include="Grid.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
