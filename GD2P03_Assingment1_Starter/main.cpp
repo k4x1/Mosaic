@@ -66,9 +66,8 @@ int main()
 	startTime = std::chrono::steady_clock::now();
 	int count = 0;
 
-	auto downloadAndProcess = [&](int i, int j) {
+	auto DownloadImageToFile = [&]() {
 
-		std::string data = "";
 		int localCount;
 		{
 			std::lock_guard<std::mutex> lock(countMutex);
@@ -77,30 +76,27 @@ int main()
 		}
 		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
 
-		if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
-			
+		std::ifstream file(filePath);
+		if (!file.good()) {
+			if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
 
 
-			if (!textArray[localCount].loadFromFile(filePath)) {
-				std::cout << "D" << " | " << std::endl;
-				return -1;
+				std::cout << "image download success: " << localCount << std::endl;
+
 			}
-
-			imageArray[localCount].setTexture(&textArray[localCount], false);
-			imageArray[localCount].setSize(sf::Vector2f(imageSize, imageSize));
-			imageArray[localCount].setPosition(imageSize * i, imageSize * j);
-
-		}	
-
+		}
+	//	FileImages newImage(filePath);
+		//grid.addTile(newImage);
 		return 0;
 		};
+
 	
 	std::vector<std::future<int>> futures;
 	for (int i = 0; i < 3; i++) {
 
 		for (int j = 0; j < 3; j++) {
 			std::cout << i << " | " << j<< std::endl;
-			futures.push_back(std::async(std::launch::async, downloadAndProcess, i, j));
+			futures.push_back(std::async(std::launch::async, DownloadImageToFile));
 		}
 	}
 	std::cout << " threads started" << std::endl;

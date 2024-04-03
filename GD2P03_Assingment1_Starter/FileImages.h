@@ -4,15 +4,14 @@
 #include <SFML/Graphics.hpp>
 class FileImages
 {
-	public:
-		std::string filePath;
-		bool rendered;
-		std::string url;
-		sf::Vector2i Position;
-		sf::Vector2f size;
-		std::vector<sf::RectangleShape> image;
-		FileImages();
-		~FileImages();
-
+public:
+	std::string m_filePath;
+	bool m_rendered;
+	bool m_empty;
+	sf::Vector2i m_position;
+	sf::Vector2f m_size;
+	sf::RectangleShape m_image;
+	//	sf::Texture m_texture;
+	FileImages(std::string _filePath);
+	~FileImages();
 };
-
