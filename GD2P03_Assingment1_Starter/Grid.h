@@ -16,7 +16,12 @@ public:
 	sf::Texture m_emptyTexure;
 	int m_gridCount;
 
-	void setTileTextures(int _page, int _x, int _y, sf::Texture* _texture);
+	int m_pageCount;
+
+	int m_currentTileX = 0;
+	int m_currentTileY = 0;
+	int m_currentTilePage = 0;
+	void setTileTextures( sf::Texture* _texture);
 	//sets the texture of a tile in that position;
 	void InitGrid(int _gridCount);
 

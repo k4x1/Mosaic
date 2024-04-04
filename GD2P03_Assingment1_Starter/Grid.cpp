@@ -1,18 +1,27 @@
 #include "Grid.h"
 
-void Grid::setTileTextures(int _page, int _x, int _y, sf::Texture* _texture)
+void Grid::setTileTextures(sf::Texture* _texture)
 {
-	m_grid[_page][_x][_y].m_empty = false;
-	m_grid[_page][_x][_y].m_image.setTexture(_texture, false);
+	
+	m_grid[m_currentTilePage][m_currentTileX][m_currentTileY].setTexture(_texture);
+	m_currentTileX++;
+	if (m_currentTileX >= m_gridSize) {
+		m_currentTileY++;
+		if (m_currentTileY >= m_gridSize) {
+			m_currentTilePage++;
+			m_currentTileY = 0;
+		}
+		m_currentTileX = 0;
+	}
 }
 
 void Grid::InitGrid(int _gridCount)
 {
 	m_gridCount = _gridCount;
 	m_grid.resize(m_gridSize, std::vector<std::vector<FileImages>>(m_gridSize, std::vector<FileImages>(m_gridSize)));
-	int pageCount = round((m_gridCount / (m_gridSize * m_gridSize) + 0.5f));
-	std::cout << pageCount << std::endl;
-	for (int page = 0; page < pageCount; page++) {
+	m_pageCount = round((m_gridCount / (m_gridSize * m_gridSize) + 0.5f));
+	
+	for (int page = 0; page < m_pageCount; page++) {
 		for (int i = 0; i < m_gridSize; i++) {
 
 			for (int j = 0; j < m_gridSize; j++) {

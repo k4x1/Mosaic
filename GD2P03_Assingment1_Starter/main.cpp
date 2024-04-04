@@ -85,7 +85,7 @@ int main() {
     for (int i = 0; i < imageCount; i++) {
         imageTextures.emplace_back();
     }
-
+    
     std::vector<std::future<void>> loadFutures;
     for (int i = 0; i < imageCount; i++) {
         std::cout << "img: " << filePaths[i] << std::endl;
@@ -93,25 +93,31 @@ int main() {
             if (!imageTextures[i].loadFromFile(filePaths[i])) {
                 std::cout << "Failed to load image: " << filePaths[i] << std::endl;
             }
+            else {
+                grid.setTileTextures(&imageTextures[i]);
+            }
             }));
     }
-
+    /*
     for (auto& future : loadFutures) {
         future.get();
-    }
+    }*/
 
-
+    
     int txtCount = 0;
     auto endTime = std::chrono::steady_clock::now(); // End the timer
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     std::cout << "Total time taken for program to load:  " << elapsedTime << " milliseconds" << std::endl;
-    for (auto& row : grid.m_grid[0]) {
-        for (auto& tile : row) {
-            std::cout << "texture set: " << txtCount<<std::endl;
-            tile.setTexture(&imageTextures[txtCount]);
-            txtCount++;
+    /*
+    for (int page = 0; page < grid.m_pageCount-1; page++) {
+        for (auto& row : grid.m_grid[page]) {
+            for (auto& tile : row) {
+                std::cout << "texture set: " << txtCount<<std::endl;
+                tile.setTexture(&imageTextures[txtCount]);
+                txtCount++;
+            }
         }
-    }
+    }*/
     
 
     // Main loop
