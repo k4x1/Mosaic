@@ -38,6 +38,10 @@ int downloadImage(const std::string& _url, const std::string& _filePath, CDownlo
     if (!file.good()) {
         if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
             std::cout << "image download success: " << _url << std::endl;
+
+        }
+        else {
+            std::cout << "image download FAILED: " << _url << std::endl;
         }
     }
     return 0;
@@ -50,9 +54,14 @@ int main() {
     std::vector<std::string> filePaths;
     const int windowSize = 900;
     sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
+    sf::RenderWindow buttonWindow(sf::VideoMode(windowSize/2, windowSize/2), "Buttons");
     CDownloader downloader;
     downloader.Init();
 
+    //small
+    //https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt
+    //large
+    //https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt
     std::string data;
     if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt", data)) {
         std::cout << "data failed to download" << std::endl;
@@ -69,8 +78,9 @@ int main() {
         filePaths.push_back(filePath);
         std::cout << filePath << std::endl;
         futures.push_back(std::async(std::launch::async, downloadImage, url, filePath, std::ref(downloader)));
-    }
 
+    }
+    
     for (auto& future : futures) {
         future.get(); // Wait for all threads to finish
     }
@@ -89,6 +99,7 @@ int main() {
     std::vector<std::future<void>> loadFutures;
     for (int i = 0; i < imageCount; i++) {
         std::cout << "img: " << filePaths[i] << std::endl;
+
         loadFutures.push_back(std::async(std::launch::async, [&, i]() {
             if (!imageTextures[i].loadFromFile(filePaths[i])) {
                 std::cout << "Failed to load image: " << filePaths[i] << std::endl;
@@ -121,7 +132,7 @@ int main() {
     
 
     // Main loop
-    while (window.isOpen()) {
+    while (window.isOpen() || buttonWindow.isOpen()) {
         sf::Event winEvent;
         while (window.pollEvent(winEvent)) {
             if (winEvent.type == sf::Event::Closed) {
@@ -129,7 +140,11 @@ int main() {
                 window.close();
             }
         }
-
+        while (buttonWindow.pollEvent(winEvent)) {
+            if (winEvent.type == sf::Event::Closed) {
+                buttonWindow.close();
+            }
+        }
         window.clear();
         for (auto& row : grid.m_grid[0]) {
             for (auto& tile : row) {
@@ -137,6 +152,9 @@ int main() {
             }
         }
         window.display();
+
+        buttonWindow.clear(sf::Color::Blue);
+        buttonWindow.display();
     }
 
     curl_global_cleanup();
