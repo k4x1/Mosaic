@@ -1,5 +1,11 @@
 #include "FileImages.h"
 
+void FileImages::setTexture(sf::Texture* _texture)
+{
+	m_empty = false;
+	m_image.setTexture(_texture, true);
+}
+
 FileImages::FileImages()
 {
 	m_rendered = false;

@@ -9,7 +9,8 @@ public:
 	bool m_rendered;
 	bool m_empty;
 	sf::RectangleShape m_image;
-	//	sf::Texture m_texture;
+	sf::Texture m_texture;
+	void setTexture(sf::Texture* _texture);
 	FileImages();
 	~FileImages();
 };

@@ -10,147 +10,118 @@
 #include "FileImages.h"
 #include "Grid.h"
 
-void screenshot(std::string fileSaveLocation, sf::Window* window)
-{
-	sf::Texture texture;
-	texture.create(window->getSize().x, window->getSize().y);
-	texture.update(*window);
-	if (texture.copyToImage().saveToFile(fileSaveLocation))
-	{
-		std::cout << "screenshot saved to " << fileSaveLocation << std::endl;
-	}
+// Function to take a screenshot
+void screenshot(const std::string& _fileSaveLocation, sf::Window* _window) {
+    sf::Texture texture;
+    texture.create(_window->getSize().x, _window->getSize().y);
+    texture.update(*_window);
+    if (texture.copyToImage().saveToFile(_fileSaveLocation)) {
+        std::cout << "screenshot saved to " << _fileSaveLocation << std::endl;
+    }
 }
-int main()
-{
-	Grid grid;
-	grid.InitGrid();
-	std::chrono::steady_clock::time_point startTime;
-	int windowSize = 900;
-	int imageCount = 0;
-	int currentPage = 0;
-	sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
-	
-	CDownloader downloader;
-	downloader.Init();
 
-	std::string data = "";
-	if (downloader.Download(
-		"https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt",
-		data))
-	{
-		std::cout << data << "\n";
-		printf("data length: %zd\n", data.length());
-	}
-	else
-	{
-		printf("data failed to download");
-	}
-	
-	int imageSize = windowSize / sqrt(imageCount);
-	
-	//split the urls
-	size_t pos = 0;
-	size_t oldPos = 0;
-	std::vector<std::string> urls;
-	while (pos != std::string::npos)
-	{
-		pos = data.find('\n', oldPos);
-		if (oldPos < data.length())
-		{
-			urls.push_back(data.substr(oldPos, pos - oldPos));
-			printf("url [%zd] : %s\n", urls.size() - 1, urls[urls.size() - 1].c_str());
-			oldPos = pos + 1;
-		}
-	} 
+// Function to split URLs from a string
+std::vector<std::string> splitUrls(const std::string& _data) {
+    std::vector<std::string> urls;
+    size_t pos = 0;
+    size_t oldPos = 0;
+    while ((pos = _data.find('\n', oldPos)) != std::string::npos) {
+        urls.push_back(_data.substr(oldPos, pos - oldPos));
+        oldPos = pos + 1;
+    }
+    return urls;
+}
 
-	std::vector<sf::RectangleShape> imageArray(imageCount);
-	std::vector<sf::Texture> textArray(imageCount);
-	textArray.reserve(urls.size());
-	std::mutex countMutex;
-	startTime = std::chrono::steady_clock::now();
-	int count = 0;
-	std::vector<std::string> filePaths;
-	auto DownloadImageToFile = [&]() {
+// Function to download images asynchronously
+int downloadImage(const std::string& _url, const std::string& _filePath, CDownloader& _downloader) {
+    std::ifstream file(_filePath);
+    if (!file.good()) {
+        if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
+            std::cout << "image download success: " << _url << std::endl;
+        }
+    }
+    return 0;
+}
 
-		int localCount;
-		{
-			std::lock_guard<std::mutex> lock(countMutex);
-			localCount = count;
-			count++;
-		}
-		std::string filePath = "Images/" + urls[localCount].substr(urls[localCount].find_last_of('/') + 1);
-		filePaths.push_back(filePath);
-		std::ifstream file(filePath);
+int main() {
+    std::chrono::steady_clock::time_point startTime;
 
-		if (!file.good()) {
-			if (downloader.DownloadToFile(urls[localCount].c_str(), filePath.c_str())) {
+    std::vector<sf::Texture> imageTextures;
+    std::vector<std::string> filePaths;
+    const int windowSize = 900;
+    sf::RenderWindow window(sf::VideoMode(windowSize, windowSize), "GD2P03 Assignment 1");
+    CDownloader downloader;
+    downloader.Init();
 
+    std::string data;
+    if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt", data)) {
+        std::cout << "data failed to download" << std::endl;
+        return 1; // Exit if download fails
+    }
 
-				std::cout << "image download success: " << localCount << std::endl;
+    std::vector<std::string> urls = splitUrls(data);
+    std::vector<std::future<int>> futures;
+    std::mutex countMutex;
+    int count = 0;
+    startTime = std::chrono::steady_clock::now();
+    for (const auto& url : urls) {
+        std::string filePath = "Images/" + url.substr(url.find_last_of('/') + 1);
+        filePaths.push_back(filePath);
+        std::cout << filePath << std::endl;
+        futures.push_back(std::async(std::launch::async, downloadImage, url, filePath, std::ref(downloader)));
+    }
 
-			}
-		}
-	//	FileImages newImage(filePath);
-		//grid.addTile(newImage);
-		return 0;
-		};
+    for (auto& future : futures) {
+        future.get(); // Wait for all threads to finish
+    }
 
+    // Initialize grid
+    Grid grid;
+    int imageCount = urls.size();
+    grid.InitGrid(imageCount);
+   
+    
+    
+    for(int i = 0; i < imageCount; i++){
+        sf::Texture txt;
+        imageTextures.push_back(txt);
+        std::cout << "img: " << filePaths[i] << std::endl;
+        imageTextures[i].loadFromFile(filePaths[i]);
+    }
+    int tempCount = 0;
+    
+    for (auto& row : grid.m_grid[0]) {
+        for (auto& tile : row) {
+            
+            tile.setTexture(&imageTextures[tempCount]);
+            tempCount++;
+        }
+    }
+    
+    //timer things
+    auto endTime = std::chrono::steady_clock::now(); // End the timer
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+    std::cout << "Total time taken for program to load:  " << elapsedTime << " milliseconds" << std::endl;
 
-	std::vector<std::future<int>> futures;
-	for (int i = 0; i < imageCount; i++) {
-			futures.push_back(std::async(std::launch::async, DownloadImageToFile));
-	}
-	std::cout << " threads started" << std::endl;
-	int countStart = 0;
-	for (auto& future : futures) {
-		future.get(); // Wait for all threads to finish
-		
-		countStart++;
-		std::cout<<countStart<<std::endl;
-	}
-	for (int i = 0; i < filePaths.size(); i++) {
-		std::cout << filePaths[i] << std::endl;
-	}
-	auto endTime = std::chrono::steady_clock::now(); // End the timer
-	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
-	std::cout << "Total time taken to load images: " << elapsedTime << " milliseconds" << std::endl;
+    // Main loop
+    while (window.isOpen()) {
+        sf::Event winEvent;
+        while (window.pollEvent(winEvent)) {
+            if (winEvent.type == sf::Event::Closed) {
+                screenshot("something.png", &window);
+                window.close();
+            }
+        }
 
-	sf::Texture txt;
-	txt.loadFromFile("Images/Anonymous_Hacker.png");
-	grid.setTileTextures(0,1, 1, &txt);
-	while (window.isOpen())
-	{
-		sf::Event winEvent;
-		while (window.pollEvent(winEvent))
-		{
-			if (winEvent.type == sf::Event::Closed)
-			{
-				screenshot("something.png", &window);
-				window.close();
-			}
-		}
+        window.clear();
+        for (auto& row : grid.m_grid[0]) {
+            for (auto& tile : row) {
+                window.draw(tile.m_image);
+            }
+        }
+        window.display();
+    }
 
-		window.clear();
-		//std::cout << grid.m_grid.size() << std::endl;
-
-		for (auto& row : grid.m_grid[currentPage]) {
-			for (auto& tile : row) {
-				window.draw(tile.m_image);
-			//	std::cout << "d";
-			}
-			//std::cout << "a" << std::endl;
-		}
-	/*	sf::Texture txt;
-		std::cout<<txt.loadFromFile("Images/emptyTile.png") <<std::endl;
-		sf::RectangleShape rct;
-		rct.setSize(sf::Vector2f(300, 300));
-		
-		rct.setTexture(&txt,false);
-		//window.draw(rct);*/
-		window.display();
-	}
-
-	curl_global_cleanup();
-
-	return 0;
+    curl_global_cleanup();
+    return 0;
 }

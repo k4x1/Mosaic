@@ -6,8 +6,9 @@ void Grid::setTileTextures(int _page, int _x, int _y, sf::Texture* _texture)
 	m_grid[_page][_x][_y].m_image.setTexture(_texture, false);
 }
 
-void Grid::InitGrid()
+void Grid::InitGrid(int _gridCount)
 {
+	m_gridCount = _gridCount;
 	m_grid.resize(m_gridSize, std::vector<std::vector<FileImages>>(m_gridSize, std::vector<FileImages>(m_gridSize)));
 	int pageCount = round((m_gridCount / (m_gridSize * m_gridSize) + 0.5f));
 	std::cout << pageCount << std::endl;
@@ -25,9 +26,12 @@ void Grid::InitGrid()
 	}
 }
 
-void Grid::ResizeGrid()
+void Grid::ResizeGrid(int _newSize, int _gridCount)
 {
-	m_gridSize = 3;
+	m_gridCount = _gridCount;
+
+
+	m_gridSize = _newSize;
 	m_tileSize = sf::Vector2f(900 / m_gridSize, 900 / m_gridSize);
 	
 

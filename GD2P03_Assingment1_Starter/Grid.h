@@ -18,9 +18,9 @@ public:
 
 	void setTileTextures(int _page, int _x, int _y, sf::Texture* _texture);
 	//sets the texture of a tile in that position;
-	void InitGrid();
+	void InitGrid(int _gridCount);
 
-	void ResizeGrid();
+	void ResizeGrid(int _newSize, int _gridCount);
 	//returns tile added position, automatically calculates where this tile should go
 	Grid();
 	~Grid();
