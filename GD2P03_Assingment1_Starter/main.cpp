@@ -9,7 +9,8 @@
 #include <memory>
 #include "FileImages.h"
 #include "Grid.h"
-
+#include <thread>
+#include "Button.h"
 // Function to take a screenshot
 void screenshot(const std::string& _fileSaveLocation, sf::Window* _window) {
     sf::Texture texture;
@@ -48,7 +49,19 @@ int downloadImage(const std::string& _url, const std::string& _filePath, CDownlo
 }
 
 int main() {
+    //button
+    sf::Font font;
+    if (!font.loadFromFile("Avilock.ttf")) {
+        // Handle error
+    }
+
+    Button button(sf::Vector2f(100, 100), sf::Vector2f(200, 50), font, "Click Me!", sf::Color::White, sf::Color::Green, sf::Color::Red);
+        //
+
+
+
     std::chrono::steady_clock::time_point startTime;
+
 
     std::vector<sf::Texture> imageTextures;
     std::vector<std::string> filePaths;
@@ -63,7 +76,7 @@ int main() {
     //large
     //https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt
     std::string data;
-    if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt", data)) {
+    if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt", data)) {
         std::cout << "data failed to download" << std::endl;
         return 1; // Exit if download fails
     }
@@ -90,46 +103,36 @@ int main() {
     // Initialize grid
     Grid grid;
     int imageCount = urls.size();
+    int percentageDone = 0;
     grid.InitGrid(imageCount);
-
+    auto loadImages = [&](int i) {
+        if (!imageTextures[i].loadFromFile(filePaths[i])) {
+            std::cout << "Failed to load image: " << filePaths[i] << std::endl;
+        }
+        else {
+            grid.setTileTextures(&imageTextures[i]);
+            percentageDone++;
+            std::cout << "image set: " << percentageDone << "/" << imageCount << std::endl;
+        }
+    };
     for (int i = 0; i < imageCount; i++) {
         imageTextures.emplace_back();
+        std::cout << "texture num: " << i << std::endl;
     }
-    
+
     std::vector<std::future<void>> loadFutures;
-    for (int i = 0; i < imageCount; i++) {
+    for (int i = 0; i < 36; i++) {
         std::cout << "img: " << filePaths[i] << std::endl;
 
-        loadFutures.push_back(std::async(std::launch::async, [&, i]() {
-            if (!imageTextures[i].loadFromFile(filePaths[i])) {
-                std::cout << "Failed to load image: " << filePaths[i] << std::endl;
-            }
-            else {
-                grid.setTileTextures(&imageTextures[i]);
-            }
-            }));
+        loadFutures.push_back(std::async(std::launch::async, loadImages, i));
     }
-    /*
-    for (auto& future : loadFutures) {
-        future.get();
-    }*/
+
 
     
     int txtCount = 0;
     auto endTime = std::chrono::steady_clock::now(); // End the timer
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     std::cout << "Total time taken for program to load:  " << elapsedTime << " milliseconds" << std::endl;
-    /*
-    for (int page = 0; page < grid.m_pageCount-1; page++) {
-        for (auto& row : grid.m_grid[page]) {
-            for (auto& tile : row) {
-                std::cout << "texture set: " << txtCount<<std::endl;
-                tile.setTexture(&imageTextures[txtCount]);
-                txtCount++;
-            }
-        }
-    }*/
-    
 
     // Main loop
     while (window.isOpen() || buttonWindow.isOpen()) {
@@ -148,12 +151,14 @@ int main() {
         window.clear();
         for (auto& row : grid.m_grid[0]) {
             for (auto& tile : row) {
+      
                 window.draw(tile.m_image);
             }
         }
         window.display();
 
         buttonWindow.clear(sf::Color::Blue);
+        button.draw(buttonWindow);
         buttonWindow.display();
     }
 
