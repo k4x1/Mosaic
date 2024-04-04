@@ -74,34 +74,45 @@ int main() {
     for (auto& future : futures) {
         future.get(); // Wait for all threads to finish
     }
+    //timer things
+   
 
     // Initialize grid
     Grid grid;
     int imageCount = urls.size();
     grid.InitGrid(imageCount);
-   
-    
-    
-    for(int i = 0; i < imageCount; i++){
-        sf::Texture txt;
-        imageTextures.push_back(txt);
+
+    for (int i = 0; i < imageCount; i++) {
+        imageTextures.emplace_back();
+    }
+
+    std::vector<std::future<void>> loadFutures;
+    for (int i = 0; i < imageCount; i++) {
         std::cout << "img: " << filePaths[i] << std::endl;
-        imageTextures[i].loadFromFile(filePaths[i]);
+        loadFutures.push_back(std::async(std::launch::async, [&, i]() {
+            if (!imageTextures[i].loadFromFile(filePaths[i])) {
+                std::cout << "Failed to load image: " << filePaths[i] << std::endl;
+            }
+            }));
     }
-    int tempCount = 0;
-    
-    for (auto& row : grid.m_grid[0]) {
-        for (auto& tile : row) {
-            
-            tile.setTexture(&imageTextures[tempCount]);
-            tempCount++;
-        }
+
+    for (auto& future : loadFutures) {
+        future.get();
     }
-    
-    //timer things
+
+
+    int txtCount = 0;
     auto endTime = std::chrono::steady_clock::now(); // End the timer
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     std::cout << "Total time taken for program to load:  " << elapsedTime << " milliseconds" << std::endl;
+    for (auto& row : grid.m_grid[0]) {
+        for (auto& tile : row) {
+            std::cout << "texture set: " << txtCount<<std::endl;
+            tile.setTexture(&imageTextures[txtCount]);
+            txtCount++;
+        }
+    }
+    
 
     // Main loop
     while (window.isOpen()) {
