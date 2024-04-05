@@ -50,12 +50,15 @@ int downloadImage(const std::string& _url, const std::string& _filePath, CDownlo
 
 int main() {
     //button
+    int currentPage = 0;
     sf::Font font;
     if (!font.loadFromFile("Avilock.ttf")) {
         // Handle error
+        std::cout << "font failed";
     }
 
-    Button button(sf::Vector2f(100, 100), sf::Vector2f(200, 50), font, "Click Me!", sf::Color::White, sf::Color::Green, sf::Color::Red);
+    Button pageRight(sf::Vector2f(200, 100), sf::Vector2f(100, 50), font, "Page right", sf::Color::White, sf::Color::Green, sf::Color::Red,PAGE_RIGHT);
+    Button pageLeft(sf::Vector2f(100, 100), sf::Vector2f(100, 50), font, "Page left", sf::Color::White, sf::Color::Green, sf::Color::Red, PAGE_LEFT);
         //
 
 
@@ -149,7 +152,7 @@ int main() {
             }
         }
         window.clear();
-        for (auto& row : grid.m_grid[0]) {
+        for (auto& row : grid.m_grid[currentPage]) {
             for (auto& tile : row) {
       
                 window.draw(tile.m_image);
@@ -157,8 +160,11 @@ int main() {
         }
         window.display();
 
+        pageRight.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)),currentPage);
+        pageLeft.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)),currentPage);
         buttonWindow.clear(sf::Color::Blue);
-        button.draw(buttonWindow);
+        pageRight.draw(buttonWindow);
+        pageLeft.draw(buttonWindow);
         buttonWindow.display();
     }
 

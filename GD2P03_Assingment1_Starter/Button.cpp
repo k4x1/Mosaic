@@ -1,15 +1,40 @@
 #include "Button.h"
 
-void Button::update(const sf::Vector2f& _mousePos)
+void Button::update(const sf::Vector2f& _mousePos, int& _pageRef)
 {
+
     if (m_button.getGlobalBounds().contains(_mousePos)) {
         m_button.setFillColor(m_hoverColor);
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+
+            if (!click) {
+                switch (m_type)
+                {
+                case PAGE_LEFT:
+                    if(_pageRef>0){
+                        _pageRef--;
+                    }
+                    break;
+                case PAGE_RIGHT:
+                    _pageRef++;
+                    break;
+                case ZOOM_IN:
+                    break;
+                case ZOOM_OUT:
+                    break;
+                default:
+                    break;
+                }
+            }
+            click = true;
             m_button.setFillColor(m_activeColor);
         }
     }
-    else {
+    else{
         m_button.setFillColor(m_idleColor);
+    }
+    if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        click = false;
     }
 }
 
@@ -19,13 +44,19 @@ void Button::draw(sf::RenderWindow& _window)
     _window.draw(m_text);
 }
 
-Button::Button(const sf::Vector2f& _position, const sf::Vector2f& _size, const sf::Font& _font, const std::string& _text, sf::Color _idleColor, sf::Color _hoverColor, sf::Color _activeColor)
+Button::Button(const sf::Vector2f& _position, const sf::Vector2f& _size, const sf::Font& _font,
+    const std::string& _text, sf::Color _idleColor, sf::Color _hoverColor, sf::Color _activeColor, buttonType _type)
 {
+    m_type = _type; 
 	m_idleColor = _idleColor;
 	m_activeColor = _activeColor;
 	m_hoverColor = _hoverColor;
 	m_button = sf::RectangleShape(_size);
 	m_text = sf::Text(_text, _font, 24);
+
+    m_button.setPosition(_position);
+    m_text.setPosition(_position);
+    m_text.setFillColor(sf::Color::Black);
 
 }
 

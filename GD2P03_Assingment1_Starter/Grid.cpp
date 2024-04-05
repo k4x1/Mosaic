@@ -72,7 +72,7 @@ void Grid::ResizeGrid(int _newSize, int _gridCount)
 Grid::Grid()
 {
 	m_pageCount = 1;
-	m_gridSize = 6;
+	m_gridSize = 2;
 	m_gridCount = 9;
 	m_tileSize = sf::Vector2f(900/m_gridSize, 900/m_gridSize);
 	m_emptyTexure.loadFromFile("emptyTile.png");
