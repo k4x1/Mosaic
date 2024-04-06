@@ -48,6 +48,7 @@ void Grid::InitGrid(int _gridCount)
 
 void Grid::ResizeGrid(int _newSize, int _gridCount)
 {
+	std::cout << m_pageCount << std::endl;
 	m_gridCount = _gridCount;
 
 
@@ -56,7 +57,9 @@ void Grid::ResizeGrid(int _newSize, int _gridCount)
 	
 
 	m_pageCount = round((m_gridCount / (m_gridSize * m_gridSize) + 0.5f));
+	std::cout << m_pageCount << std::endl;
 	m_grid.resize(m_pageCount, std::vector<std::vector<FileImages>>(m_gridSize, std::vector<FileImages>(m_gridSize)));
+
 	for (int page = 0; page < m_pageCount; page++) {
 		for (int i = 0; i < m_gridSize; i++) {
 
@@ -72,7 +75,7 @@ void Grid::ResizeGrid(int _newSize, int _gridCount)
 Grid::Grid()
 {
 	m_pageCount = 1;
-	m_gridSize = 2;
+	m_gridSize = 4;
 	m_gridCount = 9;
 	m_tileSize = sf::Vector2f(900/m_gridSize, 900/m_gridSize);
 	m_emptyTexure.loadFromFile("emptyTile.png");

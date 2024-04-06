@@ -11,6 +11,7 @@
 #include "Grid.h"
 #include <thread>
 #include "Button.h"
+#include "ThreadPool.h"
 // Function to take a screenshot
 void screenshot(const std::string& _fileSaveLocation, sf::Window* _window) {
     sf::Texture texture;
@@ -50,6 +51,7 @@ int downloadImage(const std::string& _url, const std::string& _filePath, CDownlo
 
 int main() {
     //button
+    ThreadPool pool(std::thread::hardware_concurrency());
     int currentPage = 0;
     sf::Font font;
     if (!font.loadFromFile("Avilock.ttf")) {
@@ -57,8 +59,10 @@ int main() {
         std::cout << "font failed";
     }
 
-    Button pageRight(sf::Vector2f(200, 100), sf::Vector2f(100, 50), font, "Page right", sf::Color::White, sf::Color::Green, sf::Color::Red,PAGE_RIGHT);
-    Button pageLeft(sf::Vector2f(100, 100), sf::Vector2f(100, 50), font, "Page left", sf::Color::White, sf::Color::Green, sf::Color::Red, PAGE_LEFT);
+    Button pageRight(sf::Vector2f(250, 100), sf::Vector2f(100, 50), font, "Page right", sf::Color::White, sf::Color::Green, sf::Color::Red,PAGE_RIGHT);
+    Button pageLeft(sf::Vector2f(100, 100), sf::Vector2f(100, 50), font, "Page left", sf::Color::White, sf::Color::Green, sf::Color::Red, PAGE_LEFT);    
+    Button zoomIn(sf::Vector2f(250, 200), sf::Vector2f(100, 50), font, "Zoom in", sf::Color::White, sf::Color::Green, sf::Color::Red,ZOOM_IN);
+    Button zoomOut(sf::Vector2f(100, 200), sf::Vector2f(100, 50), font, "Zoom out", sf::Color::White, sf::Color::Green, sf::Color::Red, ZOOM_OUT);
         //
 
 
@@ -108,6 +112,8 @@ int main() {
     int imageCount = urls.size();
     int percentageDone = 0;
     grid.InitGrid(imageCount);
+    imageTextures.resize(imageCount);
+    /*
     auto loadImages = [&](int i) {
         if (!imageTextures[i].loadFromFile(filePaths[i])) {
             std::cout << "Failed to load image: " << filePaths[i] << std::endl;
@@ -124,12 +130,25 @@ int main() {
     }
 
     std::vector<std::future<void>> loadFutures;
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < imageCount; i++) {
         std::cout << "img: " << filePaths[i] << std::endl;
-
+        //this for loop probably takes too long, split it into multiple parts
         loadFutures.push_back(std::async(std::launch::async, loadImages, i));
     }
-
+    */
+    std::vector<std::future<void>> loadFutures;
+    for (int i = 0; i < imageCount; i++) {
+        loadFutures.push_back(pool.enqueue([&, i]() {
+            if (!imageTextures[i].loadFromFile(filePaths[i])) {
+                std::cout << "Failed to load image: " << filePaths[i] << std::endl;
+            }
+            else {
+                grid.setTileTextures(&imageTextures[i]);
+                percentageDone++;
+                std::cout << "image set: " << percentageDone << "/" << imageCount << std::endl;
+            }
+            }));
+    }
 
     
     int txtCount = 0;
@@ -160,11 +179,15 @@ int main() {
         }
         window.display();
 
-        pageRight.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)),currentPage);
-        pageLeft.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)),currentPage);
+        pageRight.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid);
+         pageLeft.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid); 
+           zoomIn.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid);
+          zoomOut.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid);
         buttonWindow.clear(sf::Color::Blue);
         pageRight.draw(buttonWindow);
         pageLeft.draw(buttonWindow);
+        zoomIn.draw(buttonWindow);
+        zoomOut.draw(buttonWindow);
         buttonWindow.display();
     }
 

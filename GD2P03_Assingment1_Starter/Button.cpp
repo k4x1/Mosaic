@@ -1,6 +1,6 @@
 #include "Button.h"
 
-void Button::update(const sf::Vector2f& _mousePos, int& _pageRef)
+void Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef)
 {
 
     if (m_button.getGlobalBounds().contains(_mousePos)) {
@@ -16,11 +16,17 @@ void Button::update(const sf::Vector2f& _mousePos, int& _pageRef)
                     }
                     break;
                 case PAGE_RIGHT:
-                    _pageRef++;
+                    if (_pageRef < _gridRef.m_pageCount-1) {
+                        _pageRef++;
+                    }
                     break;
                 case ZOOM_IN:
+                    if(_gridRef.m_gridSize>0){
+                        _gridRef.ResizeGrid(_gridRef.m_gridSize - 1, _gridRef.m_gridCount);
+                    }
                     break;
                 case ZOOM_OUT:
+                    _gridRef.ResizeGrid(_gridRef.m_gridSize + 1, _gridRef.m_gridCount);
                     break;
                 default:
                     break;
