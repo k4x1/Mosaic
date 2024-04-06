@@ -83,7 +83,7 @@ int main() {
     //large
     //https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt
     std::string data;
-    if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt", data)) {
+    if (!downloader.Download("https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt", data)) {
         std::cout << "data failed to download" << std::endl;
         return 1; // Exit if download fails
     }
@@ -136,7 +136,7 @@ int main() {
             percentageDone++;
             std::cout << "image set: " << percentageDone << "/" << imageCount << std::endl;
         }
-    };
+    };  
     for (int i = 0; i < imageCount; i++) {
         imageTextures.emplace_back();
         std::cout << "texture num: " << i << std::endl;
