@@ -93,6 +93,19 @@ int main() {
     std::mutex countMutex;
     int count = 0;
     startTime = std::chrono::steady_clock::now();
+    std::vector<std::future<int>> downloadFutures;
+    for (const auto& url : urls) {
+        std::string filePath = "Images/" + url.substr(url.find_last_of('/') + 1);
+        filePaths.push_back(filePath);
+        downloadFutures.push_back(pool.enqueue(downloadImage, url, filePath, std::ref(downloader)));
+    }
+
+    // Wait for all downloads to complete 
+   /*
+    for (auto& future : downloadFutures) {
+        future.get();
+    }
+   
     for (const auto& url : urls) {
         std::string filePath = "Images/" + url.substr(url.find_last_of('/') + 1);
         filePaths.push_back(filePath);
@@ -103,7 +116,7 @@ int main() {
     
     for (auto& future : futures) {
         future.get(); // Wait for all threads to finish
-    }
+    }*/
     //timer things
    
 
