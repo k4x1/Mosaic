@@ -28,14 +28,15 @@ class ThreadPool {
             std::future<return_type> res = task->get_future();
             {
                 std::unique_lock<std::mutex> lock(queue_mutex);
-                if(stop){
+                if (stop) {
                     throw std::runtime_error("enqueue on stopped ThreadPool");
                 }
-                tasks.emplace([task](){ (*task)(); });
+                tasks.emplace([task]() { (*task)(); });
             }
             condition.notify_one();
             return res;
         }
+
         ThreadPool(size_t threads);
         ~ThreadPool();
 };

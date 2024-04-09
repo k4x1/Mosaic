@@ -43,6 +43,7 @@ bool Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef
                     break;   
                 case SCREENSHOT:
                     screenshots("savedMosaic.png", m_window);
+                    std::cout << "Image Saved" << std::endl;
                     break;
                 default:
                     break;
