@@ -12,7 +12,19 @@
 #include <thread>
 #include "Button.h"
 #include "ThreadPool.h"
-
+/*auto downloadImage = [](const std::string& _url, const std::string& _filePath, CDownloader& _downloader) -> int {
+    std::ifstream file(_filePath);
+    if (!file.good()) {
+        if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
+            std::cout << "image download success: " << _url << std::endl;
+        }
+        else {
+            std::cout << "image download FAILED: " << _url << std::endl;
+        }
+    }
+    return 0;
+};
+*/
 
 // Function to split URLs from a string
 std::vector<std::string> splitUrls(const std::string& _data) {
@@ -24,6 +36,21 @@ std::vector<std::string> splitUrls(const std::string& _data) {
         oldPos = pos + 1;
     }
     return urls;
+}
+
+// Function to download images asynchronously
+int downloadImage(const std::string& _url, const std::string& _filePath, CDownloader& _downloader) {
+    std::ifstream file(_filePath);
+    if (!file.good()) {
+        if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
+            std::cout << "image download success: " << _url << std::endl;
+
+        }
+        else {
+            std::cout << "image download FAILED: " << _url << std::endl;
+        }
+    }
+    return 0;
 }
 
 int main() {
@@ -99,24 +126,24 @@ int main() {
     downloader.Init();
     ThreadPool pool(std::thread::hardware_concurrency());
 
-    const char* fileToDownload = fileSizeIsSmall ? "https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt" : "https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt";
+    auto fileToDownload = fileSizeIsSmall ? "https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListSmall.txt" : "https://raw.githubusercontent.com/MDS-HugoA/TechLev/main/ImgListLarge.txt";
     std::string data;
     if (!downloader.Download(fileToDownload, data)) {
         std::cout << "data failed to download" << std::endl;
         return 1; // Exit if download fails
     }
     auto downloadImage = [](const std::string& _url, const std::string& _filePath, CDownloader& _downloader) -> int {
-        std::ifstream file(_filePath);
-        if (!file.good()) {
-            if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
-                std::cout << "image download success: " << _url << std::endl;
-            }
-            else {
-                std::cout << "image download FAILED: " << _url << std::endl;
-            }
+    std::ifstream file(_filePath);
+    if (!file.good()) {
+        if (_downloader.DownloadToFile(_url.c_str(), _filePath.c_str())) {
+            std::cout << "image download success: " << _url << std::endl;
         }
-        return 0;
-        };
+        else {
+            std::cout << "image download FAILED: " << _url << std::endl;
+        }
+    }
+    return 0;
+};
 
     std::vector<std::string> urls = splitUrls(data);
     std::vector<std::future<int>> futures;
@@ -129,8 +156,10 @@ int main() {
         filePaths.push_back(filePath);
         downloadFutures.push_back(pool.enqueue(downloadImage, url, filePath, std::ref(downloader)));
     }
-
-
+    for (auto& future : downloadFutures) {
+        future.wait();
+    }
+    // downloads have to go first 
 
     // Initialize grid
 
