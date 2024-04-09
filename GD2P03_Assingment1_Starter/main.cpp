@@ -159,7 +159,7 @@ int main() {
     for (auto& future : downloadFutures) {
         future.wait();
     }
-    // downloads have to go first 
+
 
     // Initialize grid
 

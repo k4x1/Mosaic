@@ -41,7 +41,7 @@ void Grid::InitGrid(int _gridCount)
 				m_grid[page][i][j].m_image.setTexture(&m_emptyTexure, true);
 				m_grid[page][i][j].m_image.setPosition(m_tileSize.x * i, m_tileSize.y * j);
 				m_grid[page][i][j].m_image.setSize(m_tileSize);
-				std::cout << "page: " << page << " | i: " << i << " | j: " << j << std::endl;
+			
 			}
 		}
 	}
