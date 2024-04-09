@@ -157,6 +157,7 @@
     <ClCompile Include="FileImages.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="screenshot.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>

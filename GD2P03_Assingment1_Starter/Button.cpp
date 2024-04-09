@@ -1,6 +1,13 @@
 #include "Button.h"
-
-void Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef)
+void screenshots(const std::string& _fileSaveLocation, sf::Window* _window) {
+    sf::Texture texture;
+    texture.create(_window->getSize().x, _window->getSize().y);
+    texture.update(*_window);
+    if (texture.copyToImage().saveToFile(_fileSaveLocation)) {
+        std::cout << "screenshot saved to " << _fileSaveLocation << std::endl;
+    }
+}
+bool Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef, bool* _imageList)
 {
 
     if (m_button.getGlobalBounds().contains(_mousePos)) {
@@ -21,12 +28,21 @@ void Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef
                     }
                     break;
                 case ZOOM_IN:
-                    if(_gridRef.m_gridSize>0){
-                        _gridRef.ResizeGrid(_gridRef.m_gridSize - 1, _gridRef.m_gridCount);
+                    if(_gridRef.m_gridSize > 0 ){
+                        _gridRef.ResizeGrid(-1);
                     }
                     break;
                 case ZOOM_OUT:
-                    _gridRef.ResizeGrid(_gridRef.m_gridSize + 1, _gridRef.m_gridCount);
+                    _gridRef.ResizeGrid(1);
+                    break;
+                case DONE:
+                    return true;
+                    break;
+                case FILE_SIZE:
+                    *_imageList = !*_imageList;
+                    break;   
+                case SCREENSHOT:
+                    screenshots("savedMosaic.png", m_window);
                     break;
                 default:
                     break;
@@ -42,6 +58,7 @@ void Button::update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         click = false;
     }
+    return false;
 }
 
 void Button::draw(sf::RenderWindow& _window)
@@ -59,7 +76,7 @@ Button::Button(const sf::Vector2f& _position, const sf::Vector2f& _size, const s
 	m_hoverColor = _hoverColor;
 	m_button = sf::RectangleShape(_size);
 	m_text = sf::Text(_text, _font, 24);
-
+    
     m_button.setPosition(_position);
     m_text.setPosition(_position);
     m_text.setFillColor(sf::Color::Black);
@@ -69,30 +86,3 @@ Button::Button(const sf::Vector2f& _position, const sf::Vector2f& _size, const s
 Button::~Button()
 {
 }
-/*int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Button Example");
-    sf::Font font;
-    if (!font.loadFromFile("path/to/your/font.ttf")) {
-        // Handle error
-    }
-
-    Button button(sf::Vector2f(100, 100), sf::Vector2f(200, 50), font, "Click Me!", sf::Color::White, sf::Color::Green, sf::Color::Red);
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
-        }
-
-        button.update(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
-
-        window.clear();
-        button.draw(window);
-        window.display();
-    }
-
-    return 0;
-}
-*/

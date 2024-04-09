@@ -25,7 +25,7 @@ public:
 	//sets the texture of a tile in that position;
 	void InitGrid(int _gridCount);
 
-	void ResizeGrid(int _newSize, int _gridCount);
+	void ResizeGrid(int _newSize);
 	//returns tile added position, automatically calculates where this tile should go
 	Grid();
 	~Grid();
