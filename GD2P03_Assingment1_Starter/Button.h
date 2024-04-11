@@ -27,7 +27,7 @@ class Button
     public:
         sf::Window* m_window = nullptr;
         sf::Text m_text;
-        bool update(const sf::Vector2f& _mousePos, int& _pageRef, Grid& _gridRef, bool* _imageList = nullptr );
+        bool update(const sf::Vector2f& _mousePos, std::atomic<int>& _pageRef, Grid& _gridRef, bool* _imageList = nullptr );
         void draw(sf::RenderWindow& _window);
         Button(const sf::Vector2f& _position, const sf::Vector2f& _size, const sf::Font& _font,
             const std::string& _text, sf::Color _idleColor, sf::Color _hoverColor,
