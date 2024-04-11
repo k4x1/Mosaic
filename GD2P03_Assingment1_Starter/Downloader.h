@@ -19,7 +19,7 @@ public:
 
 private:
 	CURL* m_curl = nullptr;//handle
-	bool m_globalInit;
+	bool m_globalInit = false;
 
 	static size_t WriteData(void* _buffer, size_t _size, size_t _nmemb, void* _param);
 

@@ -32,28 +32,56 @@ void Grid::InitGrid(int _gridCount)
         for (int i = 0; i < m_gridSize; i++) {
             for (int j = 0; j < m_gridSize; j++) {
                 m_grid[page][i][j].m_empty = true;
-                m_grid[page][i][j].m_image.setTexture(&m_emptyTexure, true);
+                m_grid[page][i][j].m_image = m_emptyShape;
                 m_grid[page][i][j].m_image.setPosition(m_tileSize.x * i, m_tileSize.y * j);
                 m_grid[page][i][j].m_image.setSize(m_tileSize);
             }
         }
     }
 }
-
+//
 // Method to resize the grid by a specified amount
 void Grid::ResizeGrid(int _newSize) {
     m_gridSize += _newSize;
     m_tileSize = sf::Vector2f(round(900.0f / m_gridSize), round(900.0f / m_gridSize));
 }
 
+void Grid::AnimateGrid()
+{
+
+    if (m_clock.getElapsedTime().asSeconds() > 0.5f) {
+      
+        if (m_rectSourceSprite.left == 2160) {
+            m_rectSourceSprite.left = 0;
+        }
+        else {
+           m_rectSourceSprite.left += 1080;
+        }
+        for (int page = 0; page < m_pageCount; page++) {
+            for (int i = 0; i < m_gridSize; i++) {
+                for (int j = 0; j < m_gridSize; j++) {
+                    if (m_grid[page][i][j].m_empty) {
+                        m_grid[page][i][j].m_image.setTextureRect(m_rectSourceSprite);
+                    }
+                }
+            }
+        }
+   
+         m_clock.restart();
+        
+    }
+}
+
 // Constructor for the Grid class
 Grid::Grid()
 {
+    m_emptyShape.setTexture(&m_emptyTexure, true);
+    m_emptyShape.setTextureRect(m_rectSourceSprite);
     m_pageCount = 1;
     m_gridSize = 2;
     m_gridCount = 9;
     m_tileSize = sf::Vector2f(900 / m_gridSize, 900 / m_gridSize);
-    m_emptyTexure.loadFromFile("emptyTile.png");
+    m_emptyTexure.loadFromFile("loadingTileSheet.png");
 }
 
 // Destructor for the Grid class

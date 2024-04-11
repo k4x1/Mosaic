@@ -160,6 +160,7 @@ int main() {
 
     // Main loop for rendering and handling events
     while (window.isOpen() || buttonWindow.isOpen()) {
+        
         sf::Event winEvent;
         while (window.pollEvent(winEvent)) {
             if (winEvent.type == sf::Event::Closed) {
@@ -178,7 +179,7 @@ int main() {
             }
         }
         window.display();
-
+        grid.AnimateGrid();
         // Update and draw buttons
         pageRight.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid);
          pageLeft.update(buttonWindow.mapPixelToCoords(sf::Mouse::getPosition(buttonWindow)), currentPage, grid); 
